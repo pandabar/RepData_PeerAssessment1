@@ -5,21 +5,78 @@ output:
     keep_md: true
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
 ## Loading and preprocessing the data
 
+```{r}
+library(lubridate)
+library(ggplot2)
+activity <- read.csv("C:/Users/#4757-NBAsusUX310U/OneDrive/Escritorio/CourseraProj/RepData_PeerAssessment1/activity/activity.csv")
+```
 
+```{r}
+head(activity)
+activity$day<-ymd(activity$date) #transform date format
+names(activity)
+```
 
 ## What is mean total number of steps taken per day?
 
-
+```{r}
+sumsteps<-tapply(activity$steps, activity$day, sum) #get sum of steps by day
+summary(sumsteps) #get mean, median, and quartiles
+```
+```{r}
+hist0<-hist(sumsteps, ylab="Number of days", xlab="Number of steps")
+print(hist0)
+```
 
 ## What is the average daily activity pattern?
 
-
+```{r}
+avsteps<-tapply(activity$steps, activity$interval, mean, na.rm=TRUE)
+plot(x=unique(activity$interval), y=avsteps, type="l", ylab="Mean steps", xlab="Interval", main="Average number of steps by interval")
+```
 
 ## Imputing missing values
 
+How many missing values do we have?
 
+```{r}
+sum(is.na(activity$steps))
+```
+
+Strategy: add the mean by interval (since there are days with no data at all). We add a new column to the `activity` dataframe, named `steps_noNA` which replicates the `steps` column and fills out the missing data via `ifelse()` in base R. 
+
+```{r}
+activity$steps_noNA<-ifelse(activity$interval %in% names(avsteps) & is.na(activity$steps)==TRUE, avsteps, activity$steps)
+```
+
+Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+```{r}
+sumstepsnoNA<-tapply(activity$steps_noNA, activity$day, sum)
+hist1<-hist(sumstepsnoNA, ylab="Number of days", xlab="Number of steps", main="Histogram, with missing data filled out")
+hist1
+```
+...It changes a bit, but not by much. 
+
+```{r}
+
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+We create a new column with the variable `weekday`, which shows whether the day in question is a Saturday or Sunday.
+
+```{r}
+activity$weekday<-ifelse(wday(activity$day, label=TRUE) %in% c("Saturday", "Sunday") == TRUE, "weekend", "weekday")
+```
+
+Now we create a plot showing differences between weekdays and weekends.
+
+```{r}
+```
